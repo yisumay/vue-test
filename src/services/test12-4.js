@@ -1,10 +1,14 @@
 /**
- * vue.js 第8章 挂载与更新 本test主要是写元素属性的更新，包括普通标签属性和事件
+ * vue.js 第12章 组件的实现原理 本test包括：12.1　渲染组件； 12.2　组件状态与自更新；12.3　组件实例与组件的生命周期；12.4　props 与组件的被动更新
  * @date 2023-02-07
  * @param {any} options
  * @returns {any}
  */
 
+import { reactive, effect, shallowReactive } from 'vue';
+import useQueue from './queueJob';
+
+const { queueJob } = useQueue();
 function createRenderer(options) {
   // 通过 options 得到操作 DOM 的 API
   const { createElement, insert, setElementText, patchProps } = options;
@@ -32,6 +36,132 @@ function createRenderer(options) {
     insert(el, container);
   }
 
+  // resolveProps 函数用于解析组件 props 和 attrs 数据
+  function resolveProps(options, propsData) {
+    const props = {};
+    const attrs = {};
+    // 遍历为组件传递的 props 数据
+    for (const key in propsData) {
+      if (key in options) {
+        // 如果为组件传递的 props 数据在组件自身的 props 选项中有定义，则将其视为合法的 props
+        props[key] = propsData[key];
+      } else {
+        // 否则将其作为 attrs
+        attrs[key] = propsData[key];
+      }
+    }
+
+    // 最后返回 props 与 attrs 数据
+    return [props, attrs];
+  }
+
+  function mountComponent(vnode, container, anchor) {
+    // 通过 vnode 获取组件的选项对象，即 vnode.type
+    const componentOptions = vnode.type;
+    // 获取组件的渲染函数 render, 从组件选项对象中取得组件的生命周期函数, 取出 props 定义，即 propsOption
+    const {
+      render,
+      data,
+      beforeCreate,
+      created,
+      beforeMount,
+      mounted,
+      beforeUpdate,
+      updated,
+      props: propsOption,
+    } = componentOptions;
+    // 调用 data 函数得到原始数据，并调用 reactive 函数将其包装为响应式数据
+
+    // 在这里调用 beforeCreate 钩子
+    beforeCreate && beforeCreate();
+    const state = reactive(data());
+
+    // 调用 resolveProps 函数解析出最终的 props 数据与 attrs 数据
+    const [props, attrs] = resolveProps(propsOption, vnode.props);
+
+    // 定义组件实例，一个组件实例本质上就是一个对象，它包含与组件有关的状态信息
+    const instance = {
+      // 组件自身的状态数据，即 data
+      state,
+      // 一个布尔值，用来表示组件是否已经被挂载，初始值为 false
+      // 将解析出的 props 数据包装为 shallowReactive 并定义到组件实例上
+      props: shallowReactive(props),
+      isMounted: false,
+      // 组件所渲染的内容，即子树（subTree）
+      subTree: null,
+    };
+
+    // 创建渲染上下文对象，本质上是组件实例的代理
+    const renderContext = new Proxy(instance, {
+      get(t, k, r) {
+        // 取得组件自身状态与 props 数据
+        const { state, props } = t;
+        // 先尝试读取自身状态数据
+        if (state && k in state) {
+          return state[k];
+        } else if (k in props) {
+          // 如果组件自身没有该数据，则尝试从 props 中读取
+          return props[k];
+        } else {
+          console.error('不存在');
+        }
+      },
+      set(t, k, v, r) {
+        const { state, props } = t;
+        if (state && k in state) {
+          state[k] = v;
+        } else if (k in props) {
+          console.warn(`Attempting to mutate prop "${k}". Props are readonly.`);
+        } else {
+          console.error('不存在');
+        }
+      },
+    });
+
+    // 将组件实例设置到 vnode 上，用于后续更新
+    vnode.component = instance;
+
+    // 在这里调用 created 钩子
+    created && created.call(renderContext);
+
+    // 将组件的 render 函数调用包装到 effect 内
+    effect(
+      () => {
+        // 调用 render 函数时，将其 this 设置为 state，
+        // 从而 render 函数内部可以通过 this 访问组件自身状态数据
+        const subTree = render.call(state, state);
+        // 检查组件是否已经被挂载
+        if (!instance.isMounted) {
+          // 在这里调用 beforeMount 钩子
+          beforeMount && beforeMount.call(state);
+          // 初次挂载，调用 patch 函数第一个参数传递 null
+          patch(null, subTree, container, anchor);
+          // 重点：将组件实例的 isMounted 设置为 true，这样当更新发生时就不会再次进行挂载操作，
+          // 而是会执行更新
+          instance.isMounted = true;
+          // 在这里调用 mounted 钩子
+          mounted && mounted.call(state);
+        } else {
+          // 在这里调用 beforeUpdate 钩子
+          beforeUpdate && beforeUpdate.call(state);
+          // 当 isMounted 为 true 时，说明组件已经被挂载，只需要完成自更新即可，
+          // 所以在调用 patch 函数时，第一个参数为组件上一次渲染的子树，
+          // 意思是，使用新的子树与上一次渲染的子树进行打补丁操作
+          patch(instance.subTree, subTree, container, anchor);
+          // 在这里调用 updated 钩子
+          updated && updated.call(state);
+        }
+        // 更新组件实例的子树
+        instance.subTree = subTree;
+        patch(null, subTree, container, anchor);
+      },
+      {
+        // 指定该副作用函数的调度器为 queueJob 即可
+        scheduler: queueJob,
+      }
+    );
+  }
+
   function unmount(vnode) {
     // 根据 vnode 获取要卸载的真实 DOM 元素,container._vnode 代表旧 vnode
     const parent = vnode.el.parentNode;
@@ -48,7 +178,7 @@ function createRenderer(options) {
    * @param {any} container 挂载点
    * @returns {any}
    */
-  function patch(n1, n2, container) {
+  function patch(n1, n2, container, anchor) {
     // 如果 n1 存在，则对比 n1 和 n2 的类型
     if (n1 && n1.type !== n2.type) {
       // 如果新旧 vnode 的类型不同，则直接将旧 vnode 卸载
@@ -68,6 +198,13 @@ function createRenderer(options) {
       }
     } else if (typeof type === 'object') {
       // 如果 n2.type 的值的类型是对象，则它描述的是组件
+      if (!n1) {
+        // 挂载组件
+        mountComponent(n2, container, anchor);
+      } else {
+        // 更新组件
+        patchComponent(n1, n2, anchor);
+      }
     } else if (type === 'xxx') {
       // 处理其他类型的 vnode
     }
@@ -93,6 +230,41 @@ function createRenderer(options) {
 
     // 第二步：更新 children
     patchChildren(n1, n2, el);
+  }
+
+  function hasPropsChanged(prevProps, nextProps) {
+    const nextKeys = Object.keys(nextProps);
+    // 如果新旧 props 的数量变了，则说明有变化
+    if (nextKeys.length !== Object.keys(prevProps).length) {
+      return true;
+    }
+    // 只有
+    for (let i = 0; i < nextKeys.length; i++) {
+      const key = nextKeys[i];
+      // 有不相等的 props，则说明有变化
+      if (nextProps[key] !== prevProps[key]) return true;
+    }
+    return false;
+  }
+
+  function patchComponent(n1, n2, anchor) {
+    // 获取组件实例，即 n1.component，同时让新的组件虚拟节点 n2.component 也指向组件实例
+    const instance = (n2.component = n1.component);
+    // 获取当前的 props 数据
+    const { props } = instance;
+    // 调用 hasPropsChanged 检测为子组件传递的 props 是否发生变化，如果没有变化，则不需要更新
+    if (hasPropsChanged(n1.props, n2.props)) {
+      // 调用 resolveProps 函数重新获取 props 数据
+      const [nextProps] = resolveProps(n2.type.props, n2.props);
+      // 更新 props
+      for (const k in nextProps) {
+        props[k] = nextProps[k];
+      }
+      // 删除不存在的 props
+      for (const k in props) {
+        if (!(k in nextProps)) delete props[k];
+      }
+    }
   }
 
   /**
