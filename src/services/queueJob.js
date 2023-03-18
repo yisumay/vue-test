@@ -17,6 +17,7 @@ export default () => {
       // 在微任务中刷新缓冲队列
       p.then(() => {
         try {
+          console.log('%c [ queue ]', 'font-size:13px; background:pink; color:#bf2c9f;', queue);
           // 执行任务队列中的任务
           queue.forEach((job) => job());
         } finally {

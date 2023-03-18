@@ -10,6 +10,11 @@ function createRenderer(options) {
   const { createElement, insert, setElementText, patchProps } = options;
 
   // 在这个作用域内定义的函数都可以访问那些 API
+
+    /**
+   * 挂载元素
+   * @date 2023-02-17
+   */
   function mountElement(vnode, container) {
     // 让 vnode.el 引用真实 DOM 元素，当卸载操作发生的时候，只需要根据虚拟节点对象 vnode.el 取得真实 DOM 元素，再将其从父元素中移除即可：
     const el = (vnode.el = createElement(vnode.type));
@@ -32,6 +37,7 @@ function createRenderer(options) {
     insert(el, container);
   }
 
+    // 卸载元素
   function unmount(vnode) {
     // 根据 vnode 获取要卸载的真实 DOM 元素,container._vnode 代表旧 vnode
     const parent = vnode.el.parentNode;
@@ -73,6 +79,10 @@ function createRenderer(options) {
     }
   }
 
+    /**
+   *  更新组件
+   * * @date 2023-02-17
+   */
   function patchElement(n1, n2) {
     const el = (n2.el = n1.el);
     const oldProps = n1.props;
@@ -142,6 +152,10 @@ function createRenderer(options) {
     }
   }
 
+    /**
+   * 渲染
+   * * @date 2023-02-17
+   */
   function render(vnode, container) {
     if (vnode) {
       // 新 vnode 存在，将其与旧 vnode（container._vnode保存旧 vnode） 一起传递给 patch 函数，进行打补丁（更新操作）
