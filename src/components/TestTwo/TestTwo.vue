@@ -4,7 +4,7 @@
 <script>
 import { effect, ref } from 'vue';
 import { renderer } from '../../services/test12-4';
-import useQueue from '../../services/queueJob';
+// import useQueue from '../../services/queueJob';
 
 export default {
   name: 'TestTwo',
@@ -16,7 +16,7 @@ export default {
   setup() {
     const bol = ref(0);
 
-    const { queueJob } = useQueue();
+//     const { queueJob } = useQueue();
 
 //      const jobQueue = new Set()
 //  // 使用 Promise.resolve() 创建一个 promise 实例，我们用它将一个任务添加到微任务队列
@@ -38,58 +38,58 @@ export default {
 //    })
 //  }
 
-    // effect(() => {
-    //   console.log('%c [ xxx ]', 'font-size:13px; background:pink; color:#bf2c9f;', bol.value);
-    //   const MyComponent = {
-    //     name: 'MyComponent',
-    //     // 组件接收名为 title 的 props，并且该 props 的类型为 String
-    //     data() {
-    //       return {
-    //         foo: 'hello world',
-    //       };
-    //     },
-    //     props: {
-    //       title: 'test',
-    //     },
-    //     render() {
-    //       return {
-    //         type: 'div',
-    //         children: `count is: ${this.title}`, // 访问 props 数据
-    //       };
-    //     },
-    //   };
+    effect(() => {
+      console.log('%c [ xxx ]', 'font-size:13px; background:pink; color:#bf2c9f;', bol.value);
+      const MyComponent = {
+        name: 'MyComponent',
+        // 组件接收名为 title 的 props，并且该 props 的类型为 String
+        data() {
+          return {
+            foo: 'hello world',
+          };
+        },
+        props: {
+          title: 'test',
+        },
+        render() {
+          return {
+            type: 'div',
+            children: `count is: ${this.title}`, // 访问 props 数据
+          };
+        },
+      };
 
-    //   // 创建 vnode
-    //   const vnode = {
-    //     type: MyComponent,
-    //     props: {
-    //       title: bol.value,
-    //       // other: this.val,
-    //     },
-    //   };
+      // 创建 vnode
+      const vnode = {
+        type: MyComponent,
+        props: {
+          title: bol.value,
+          // other: this.val,
+        },
+      };
 
-    //   // 渲染 vnode
-    //   renderer.render(vnode, document.querySelector('#app'));
-    // });
+      // 渲染 vnode
+      renderer.render(vnode, document.querySelector('#app'));
+    });
     
     // 更新子组件时失败，报错信息是
 
-    effect(() => {
-    console.log( bol.value);
- }, {
-   scheduler(fn) {
-     // 每次调度时，将副作用函数添加到 jobQueue 队列中
-     console.log('%c [ xxx ]', 'font-size:13px; background:pink; color:#bf2c9f;', fn);
-     queueJob(() => {
-    console.log('%c [ bol ]', 'font-size:13px; background:pink; color:#bf2c9f;', bol.value);
- });
-   }
-    });
+//     const scheduler = (job) => {
+//   Scheduler.nextTick(job)
+// }
 
-    bol.value++;
-    bol.value++;
-    bol.value++;
+//     effect(() => {
+//     scheduler(() => {
+//       queueJob(() => console.log('%c [ xxx ]', 'font-size:13px; background:pink; color:#bf2c9f;', bol.value))
+//     })
+//  });
+
+    // bol.value++;
+    // bol.value++;
+    // bol.value++;
   },
+
+  
 
   // 1、scheduler(fn)里的fn为undefined,导致无法运行
   // 2、 给queueJob强行传入fn，为什么没有去重，导致最后还是执行了3次fn

@@ -146,7 +146,7 @@ function createRenderer(options) {
       () => {
         // 调用 render 函数时，将其 this 设置为 renderContext
         // 从而 render 函数内部可以通过 this 访问组件自身状态数据
-        const subTree = render.call(renderContext);
+        const subTree = render.call(renderContext, renderContext)
         // 检查组件是否已经被挂载
         if (!instance.isMounted) {
           // 在这里调用 beforeMount 钩子
@@ -165,6 +165,8 @@ function createRenderer(options) {
           // 所以在调用 patch 函数时，第一个参数为组件上一次渲染的子树，
           // 意思是，使用新的子树与上一次渲染的子树进行打补丁操作
           patch(instance.subTree, subTree, container, anchor);
+          debugger
+          console.log('patch', subTree);
           // 在这里调用 updated 钩子
           updated && updated.call(renderContext);
         }
@@ -221,7 +223,7 @@ function createRenderer(options) {
   }
 
   /**
-   *  更新组件
+   *  更新元素
    * * @date 2023-02-17
    */
   function patchElement(n1, n2) {
@@ -270,10 +272,11 @@ function createRenderer(options) {
    */
   function patchComponent(n1, n2, anchor) {
 
+    const componentOptions = n2.type;
     // 获取组件实例，即 n1.component，同时让新的组件虚拟节点 n2.component 也指向组件实例
     const instance = (n2.component = n1.component);
     // 获取当前的 props 数据
-    const { props } = instance;
+    const { props, render } = instance;
     // 调用 hasPropsChanged 检测为子组件传递的 props 是否发生变化，如果没有变化，则不需要更新
     if (hasPropsChanged(n1.props, n2.props)) {
       // 调用 resolveProps 函数重新获取 props 数据
@@ -286,6 +289,7 @@ function createRenderer(options) {
       for (const k in props) {
         if (!(k in nextProps)) delete props[k];
       }
+      // patch(render, n2.render);
     }
   }
 
@@ -330,6 +334,7 @@ function createRenderer(options) {
   function render(vnode, container) {
     if (vnode) {
       // 新 vnode 存在，将其与旧 vnode（container._vnode保存旧 vnode） 一起传递给 patch 函数，进行打补丁（更新操作）
+      console.log('%c [ container ]', 'font-size:13px; background:pink; color:#bf2c9f;',container._vnode );
       patch(container._vnode, vnode, container);
     } else {
       if (container._vnode) {
