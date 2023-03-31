@@ -105,10 +105,10 @@ effect(() => {
         name: 'MyComponent',
         setup() {
           onMounted(() => {
-            console.log('mounted 1')
+            alert('mounted 1')
           })
           onMounted(() => {
-            console.log('mounted 2')
+            alert('mounted 2')
           })
         },
 
