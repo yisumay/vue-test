@@ -233,6 +233,7 @@ export const renderer = createRenderer({
           // 添加 invoker.attached 属性，存储事件处理函数被绑定的时间
           invoker.attached = performance.now();
           // 绑定 invoker 作为事件处理函数
+          console.log('click', name, invoker);
           el.addEventListener(name, invoker);
         } else {
           // 新的事件绑定函数不存在，且之前绑定的 invoker 存在，则移除绑定

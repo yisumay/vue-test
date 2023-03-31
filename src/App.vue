@@ -2,19 +2,20 @@
   <img alt="Vue logo" src="./assets/logo.png" />
   <!-- <HelloWorld msg="Welcome to Your Vue.js App" /> -->
   <!-- <TestOne /> -->
-  <TestTwo />
+  <TestThree />
 </template>
 
 <script>
 // import HelloWorld from './components/HelloWorld.vue';
 // import TestOne from './components/TestOne/TestOne.vue';
-import TestTwo from './components/TestTwo/TestTwo.vue';
+// import TestTwo from './components/TestTwo/TestTwo.vue';
+import TestThree from './components/TestThree/TestThree.vue';
 
 export default {
   name: 'App',
   components: {
     // TestOne,
-    TestTwo,
+    TestThree,
   },
 };
 </script>

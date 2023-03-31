@@ -1,8 +1,12 @@
 <template>
-  <div id="TestTwo">TestTwo</div>
+  <div>
+    <div id="TestTwo"></div>
+    <button @click="handleClick">add</button>
+  </div>
+
 </template>
 <script>
-import { effect, ref } from 'vue';
+import { effect, ref,nextTick } from 'vue';
 import { renderer } from '../../services/test12-4';
 // import useQueue from '../../services/queueJob';
 
@@ -15,28 +19,9 @@ export default {
   // },
   setup() {
     const bol = ref(0);
-
-//     const { queueJob } = useQueue();
-
-//      const jobQueue = new Set()
-//  // 使用 Promise.resolve() 创建一个 promise 实例，我们用它将一个任务添加到微任务队列
-//  const p = Promise.resolve()
-
-//  // 一个标志代表是否正在刷新队列
-//  let isFlushing = false
-//  function flushJob() {
-//    // 如果队列正在刷新，则什么都不做
-//    if (isFlushing) return
-//    // 设置为 true，代表正在刷新
-//    isFlushing = true
-//    // 在微任务队列中刷新 jobQueue 队列
-//    p.then(() => {
-//      jobQueue.forEach(job => job())
-//    }).finally(() => {
-//      // 结束后重置 isFlushing
-//      isFlushing = false
-//    })
-//  }
+    const handleClick=() => {
+      bol.value++;
+    }
 
     effect(() => {
       console.log('%c [ xxx ]', 'font-size:13px; background:pink; color:#bf2c9f;', bol.value);
@@ -67,9 +52,12 @@ export default {
           // other: this.val,
         },
       };
+      console.log('%c [ 123123 ]', 'font-size:13px; background:pink; color:#bf2c9f;', document.querySelector('#TestTwo'));
+      // 渲染 vnode，在dom渲染完之后才能获取到#TestTwo，所以要在nextTick里
+      nextTick(() => {
+        renderer.render(vnode, document.querySelector('#TestTwo'));
+      })
 
-      // 渲染 vnode
-      renderer.render(vnode, document.querySelector('#app'));
     });
     
     // 更新子组件时失败，报错信息是
@@ -84,9 +72,12 @@ export default {
 //     })
 //  });
 
-    // bol.value++;
-    // bol.value++;
-    // bol.value++;
+    bol.value++;
+
+    return {
+      bol,
+      handleClick
+    }
   },
 
   
