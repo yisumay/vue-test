@@ -2,20 +2,25 @@
   <img alt="Vue logo" src="./assets/logo.png" />
   <!-- <HelloWorld msg="Welcome to Your Vue.js App" /> -->
   <!-- <TestOne /> -->
-  <TestThree />
+  <!-- <TestTwo /> -->
+  <!-- <TestThree /> -->
+  <Draggable />
 </template>
 
 <script>
 // import HelloWorld from './components/HelloWorld.vue';
 // import TestOne from './components/TestOne/TestOne.vue';
-// import TestTwo from './components/TestTwo/TestTwo.vue';
+import TestTwo from './components/TestTwo/TestTwo.vue';
 import TestThree from './components/TestThree/TestThree.vue';
+import Draggable from './components/DraggableTest/DraggableTest.vue';
 
 export default {
   name: 'App',
   components: {
     // TestOne,
-    TestThree,
+    // TestTwo,
+    // TestThree,
+    Draggable,
   },
 };
 </script>

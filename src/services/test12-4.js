@@ -182,6 +182,7 @@ function createRenderer(options) {
 
   // 卸载元素
   function unmount(vnode) {
+    console.log('vnode', vnode)
     const parent = vnode.el.parentNode;
     if (parent) {
       parent.removeChild(vnode.el);
