@@ -173,6 +173,9 @@ export default {
   border: 3px solid red;
   border-radius: 10px;
   margin: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .mainDiv > .childDiv {

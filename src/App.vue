@@ -1,28 +1,28 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" />
+  <div>
+    <img alt="Vue logo" src="./assets/logo.png" />
+    <TestCompile />
+  </div>
   <!-- <HelloWorld msg="Welcome to Your Vue.js App" /> -->
   <!-- <TestOne /> -->
   <!-- <TestTwo /> -->
   <!-- <TestThree /> -->
-  <Draggable />
+  <!-- <draggable :list="array" tag="span">
+    <div v-for="item in array" :key="item">{{ item }}</div>
+  </draggable> -->
 </template>
 
-<script>
+<script setup>
 // import HelloWorld from './components/HelloWorld.vue';
 // import TestOne from './components/TestOne/TestOne.vue';
-import TestTwo from './components/TestTwo/TestTwo.vue';
-import TestThree from './components/TestThree/TestThree.vue';
-import Draggable from './components/DraggableTest/DraggableTest.vue';
+// import TestTwo from './components/TestTwo/TestTwo.vue';
+// import TestThree from './components/TestThree/TestThree.vue';
+// import TestCompile from './components/TestCompile/TestCompile.vue'
+// import Draggable from './components/DraggableTest/DraggableT.vue';
+// import draggable from 'vuedraggable';
+import TestCompile from './components/TestCompile/TestCompile.vue';
 
-export default {
-  name: 'App',
-  components: {
-    // TestOne,
-    // TestTwo,
-    // TestThree,
-    Draggable,
-  },
-};
+
 </script>
 
 <style>
